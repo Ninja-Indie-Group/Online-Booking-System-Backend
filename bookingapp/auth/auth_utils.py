@@ -73,14 +73,14 @@ def send_otp_email(name, email, otp):
     # Send an email with the OTP
     try:
         # Create the message for the user
-        msg_title = "Registration Confirmation - MediTrace"
+        msg_title = "Registration Confirmation - Booking App"
         sender = "noreply@app.com"
         msg = Message(msg_title, sender=sender, recipients=[email])
         msg_body = "Please use this verification code to confirm your registration"
         msg.body = ""
-        msg.reply_to = "meditrace@gmail.com"
+        msg.reply_to = "bookingapp@gmail.com"
         data = {
-            'app_name': "MediTrace",
+            'app_name': "Booking App",
             'title': msg_title,
             'body': msg_body,
             'name': name,

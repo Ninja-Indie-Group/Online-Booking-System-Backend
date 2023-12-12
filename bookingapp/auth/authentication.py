@@ -11,6 +11,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, jwt_re
 # Create a Blueprint for authentication routes
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/v1/auth')
 
+
 # Endpoint for user registration
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -117,7 +118,7 @@ def confirm_otp():
         return jsonify({'message': 'OTP expired'}), 400
 
     # OTP matches and is within the expiry time, confirm the email
-    user.email_confirmed = True
+    user.is_verified = True
     user.update()
     return jsonify({'message': 'Email confirmed successfully'}), 200
 
