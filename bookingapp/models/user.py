@@ -13,7 +13,8 @@ class User(BaseModel):
 
     # Adjust the length of string columns based on your requirements
     username = db.Column(db.String(50), unique=True, nullable=False)
-    name = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     avatar = db.Column(db.String(255), nullable=False)
@@ -23,16 +24,18 @@ class User(BaseModel):
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
 
+
     attended_events = db.relationship(
         'Event', secondary='event_attendees', backref=db.backref(
             'attendees', lazy='dynamic')
     )
 
-    def __init__(self, username, name, email, password_hash, avatar, is_verified=False, is_admin=False, is_active=True):
+    def __init__(self, username, first_name, last_name, email, password_hash, avatar, is_verified=False, is_admin=False, is_active=True):
         """Initialize the User object"""
         super().__init__()
         self.username = username
-        self.name = name
+        self.first_name = first_name
+        self.last_name = last_name
         self.email = email
         self.password_hash = password_hash
         self.avatar = avatar
@@ -55,7 +58,8 @@ class User(BaseModel):
         """Return a dictionary representation of the User object"""
         return {
             "username": self.username,
-            "name": self.name,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
             "email": self.email,
             "avatar": self.avatar,
             "is_verified": self.is_verified,

@@ -81,7 +81,6 @@ def create_app(config):
     from bookingapp.booking.routes import booking_bp
     from bookingapp.user.routes import user_bp
     from bookingapp.admin.routes import admin_bp
-    from bookingapp.venue.routes import venue_bp
     from bookingapp.event.routes import event_bp
 
 
@@ -92,7 +91,6 @@ def create_app(config):
     app.register_blueprint(util_bp)
     app.register_blueprint(booking_bp)
     app.register_blueprint(admin_bp)
-    app.register_blueprint(venue_bp)
     app.register_blueprint(event_bp)
 
 

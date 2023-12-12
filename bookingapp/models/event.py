@@ -14,24 +14,20 @@ class Event(BaseModel):
     location = db.Column(db.String(100), nullable=False)
     date_time = db.Column(db.DateTime, nullable=False)
     description = db.Column(db.Text, nullable=True)
-    user_id = db.Column(db.String(255), db.ForeignKey('users.id'), nullable=True)
+    price = db.Column(db.Float, nullable=True)
     admin_id = db.Column(db.String(255), db.ForeignKey('admins.id'), nullable=True)
-    venue_id = db.Column(db.String(255), db.ForeignKey('venues.id'), nullable=False)
-    venue = db.relationship('Venue', backref='events')
     attendees = db.relationship(
         'User', secondary='event_attendees', backref=db.backref(
             'attended_events', lazy='dynamic'))
 
-    def __init__(self, event_name, location, date_time, description, user_id, admin_id, venue_id):
+    def __init__(self, event_name, location, date_time, description, admin_id):
         """Initialize the Event object"""
         super().__init__()
         self.event_name = event_name
         self.location = location
         self.date_time = date_time
         self.description = description
-        self.user_id = user_id
         self.admin_id = admin_id
-        self.venue_id = venue_id
 
     def format(self):
         """Return a dictionary representation of the Event object"""
@@ -41,9 +37,7 @@ class Event(BaseModel):
             "location": self.location,
             "date_time": self.date_time,
             "description": self.description,
-            "user_id": self.user_id,
-            "admin_id": self.admin_id,
-            "venue_id": self.venue_id
+            "admin_id": self.admin_id
         }
 
     @classmethod
