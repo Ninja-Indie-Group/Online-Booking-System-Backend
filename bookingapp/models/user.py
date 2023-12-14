@@ -2,6 +2,7 @@
 """User Entity Module"""
 from bookingapp.models.base import BaseModel
 from bookingapp import db
+from bookingapp.models import event_attendees
 
 
 class User(BaseModel):
@@ -27,8 +28,9 @@ class User(BaseModel):
 
     attended_events = db.relationship(
         'Event', secondary='event_attendees', backref=db.backref(
-            'attendees', lazy='dynamic')
-    )
+            'attendees_list', lazy='dynamic')
+        )
+
 
     def __init__(self, username, first_name, last_name, email, password_hash, avatar, is_verified=False, is_admin=False, is_active=True):
         """Initialize the User object"""
@@ -50,7 +52,7 @@ class User(BaseModel):
         """Return a string representation of the User object"""
         return (
             f"Id: {self.id}, Username: {self.username}, "
-            f"Name: {self.name}, Email: {self.email}"
+            f"Name: {self.first_name} {self.last_name}, Email: {self.email}"
             )
 
     # Override the format method to return user attributes as a dictionary

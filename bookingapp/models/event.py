@@ -18,15 +18,18 @@ class Event(BaseModel):
     admin_id = db.Column(db.String(255), db.ForeignKey('admins.id'), nullable=True)
     attendees = db.relationship(
         'User', secondary='event_attendees', backref=db.backref(
-            'attended_events', lazy='dynamic'))
+            'events_attending', lazy='dynamic')
+        )
 
-    def __init__(self, event_name, location, date_time, description, admin_id):
+
+    def __init__(self, event_name, location, date_time, description, price, admin_id):
         """Initialize the Event object"""
         super().__init__()
         self.event_name = event_name
         self.location = location
         self.date_time = date_time
         self.description = description
+        self.price = price
         self.admin_id = admin_id
 
     def format(self):
@@ -49,20 +52,19 @@ class Event(BaseModel):
     def get_upcoming_events(cls):
         """Retrieve upcoming events"""
         return cls.query.filter(
-            db.and_(cls.date >= datetime.today()
-                    .date(), cls.time >= datetime.now().time())).all()
+            db.and_(cls.date_time >= datetime.today(), cls.date_time >= datetime.now().time())
+            ).all()
 
     @classmethod
     def get_event_details(cls, event_id):
         """Retrieve details of a specific event"""
         return cls.query.get(event_id)
 
-    @classmethod
-    def attend_event(cls, user_id, event_id):
-        """Mark a user as attending a specific event"""
-        event = cls.query.get(event_id)
-        if event:
-            user = User.query.get(user_id)
-            if user:
-                event.attendees.append(user)
-                db.session.commit()
+@classmethod
+def attend_event(cls, user_id, event_id):
+    """Mark a user as attending a specific event"""
+    event = cls.query.get(event_id)
+    user = User.query.get(user_id)
+    if event and user:
+        event.attendees.append(user)
+        db.session.commit()
