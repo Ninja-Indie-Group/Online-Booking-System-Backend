@@ -17,12 +17,11 @@ class Booking(BaseModel):
     user = db.relationship('User', backref='bookings')
     event = db.relationship('Event', backref='bookings')
 
-    def __init__(self, user_id, event_id, booking_date):
+    def __init__(self, user_id, event_id):
         """Initialize the Booking object"""
         super().__init__()
         self.user_id = user_id
         self.event_id = event_id
-        self.booking_date = booking_date
 
     def __repr__(self):
         """Return a string representation of the Booking object"""

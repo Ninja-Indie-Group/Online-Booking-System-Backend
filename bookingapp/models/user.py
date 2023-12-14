@@ -12,7 +12,7 @@ class User(BaseModel):
     __tablename__ = "users"
 
 
-    # Adjust the length of string columns based on your requirements
+    # Define column for the user table
     username = db.Column(db.String(50), unique=True, nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=True)
@@ -59,6 +59,7 @@ class User(BaseModel):
     def format(self):
         """Return a dictionary representation of the User object"""
         return {
+            "id": self.id,
             "username": self.username,
             "first_name": self.first_name,
             "last_name": self.last_name,

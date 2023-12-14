@@ -92,6 +92,7 @@ def create_app(config):
     app.register_blueprint(booking_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(event_bp)
+    app.register_blueprint(user_bp)
 
 
     # create db tables from models if not exists
