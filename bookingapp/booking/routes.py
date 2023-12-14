@@ -8,11 +8,6 @@ from uuid import UUID
 # Create the booking blueprint
 booking_bp = Blueprint('booking', __name__, url_prefix='/api/v1/booking')
 
-# test
-@booking_bp.route('/test', methods=['GET'])
-def test():
-    return jsonify({'message': 'Booking Blueprint Working'}), 200
-
 # Route to Get all Bookings of an event
 @booking_bp.route('/<event_id>', methods=['GET'])
 def get_bookings(event_id):
@@ -36,7 +31,7 @@ def get_bookings(event_id):
         bookings = Booking.query.filter_by(event_id=event_id).all()
 
         # Check if the bookings exist
-        if bookings is None:
+        if not bookings:
             return jsonify({'message': 'No bookings found'}), 404
 
         # Format the bookings
@@ -44,5 +39,36 @@ def get_bookings(event_id):
 
         # Return the bookings
         return jsonify({'message': 'Bookings found', 'data': formatted_bookings}), 200
+    except Exception as e:
+        return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
+
+# Route to Create a new Booking
+@booking_bp.route('/<event_id>', methods=['POST'])
+def create_booking(event_id):
+    """
+    Creates a new booking for a specific event.
+
+    Parameters:
+        event_id (str): The ID of the event.
+
+    Returns:
+        A JSON response containing the created booking if successful,
+        or a JSON response with an 'An error occurred' message and a 500 status code if an error occurs during the process.
+    """
+    try:
+        # Validate the event_id
+        schema = IdSchema()
+        event_id = schema.load({'id': event_id})
+
+        # Extract user_id and other necessary data from the request
+        user_id = request.json.get('user_id')
+
+        # Create a new booking instance and add it to the database
+        booking = Booking(user_id=user_id, event_id=event_id)
+        booking.insert()
+
+        # Return the created booking
+        formatted_booking = booking.format()
+        return jsonify({'message': 'Booking created', 'data': formatted_booking}), 201
     except Exception as e:
         return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
