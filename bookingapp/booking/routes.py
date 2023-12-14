@@ -69,6 +69,6 @@ def create_booking(event_id):
 
         # Return the created booking
         formatted_booking = booking.format()
-        return jsonify({'message': 'Booking created', 'data': formatted_booking}), 201
+        return jsonify({'message': 'Booking has been successful', 'data': formatted_booking}), 201
     except Exception as e:
         return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
