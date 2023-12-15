@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify
 from bookingapp.models.user import User
 from bookingapp import db
-from bookingapp.utils.uuid_validation import IdSchema
+#from bookingapp.utils.uuid_validation import IdSchema
 from uuid import UUID
 from werkzeug.security import generate_password_hash
 

@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify
 from bookingapp.models.admin import Admin
 from bookingapp import db
-from bookingapp.utils.uuid_validation import IdSchema
+#from bookingapp.utils.uuid_validation import IdSchema
 from uuid import UUID
 
 # Create the admin blueprint
