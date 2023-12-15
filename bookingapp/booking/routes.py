@@ -25,8 +25,8 @@ def get_bookings(event_id):
     """
     try:
         # Validate the event_id
-        schema = IdSchema()
-        event_id = schema.load({'id': event_id})
+        #schema = IdSchema()
+        #event_id = schema.load({'id': UUID(event_id)})
 
         # Query the bookings
         bookings = Booking.query.filter_by(event_id=event_id).all()

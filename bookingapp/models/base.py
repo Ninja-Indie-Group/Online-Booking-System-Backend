@@ -8,7 +8,7 @@ from datetime import datetime
 
 def get_uuid():
     """Generate a unique id using uuid4()"""
-    return uuid4().hex
+    return str(uuid4().hex)
 
 
 # Create a base model class that will contain common functionality
