@@ -144,7 +144,7 @@ def update_booking(booking_id):
     except Exception as e:
         return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
 
-# Route to Delete a Booking
+# Route to Delete a an existed Booking
 @booking_bp.route('/<booking_id>', methods=['DELETE'])
 def delete_booking(booking_id):
     """
