@@ -45,7 +45,8 @@ def get_bookings(event_id):
     except Exception as e:
         return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
 
-# Route to get bookings for a user
+# Route to get bookings for a user used for testing,
+# is expected to be in /user route
 @booking_bp.route('/user/<user_id>', methods=['GET'])
 def get_bookings_for_user(user_id):
     try:
@@ -95,6 +96,9 @@ def create_booking(event_id):
         
         # Validate the user_id format ensuring it's a valid UUID
         user_id = validate_uuid(user_id)
+        
+        # TODO: Check if the user_id matches the user creating the booking
+        # using an authentication and authorization logic here
 
         # Check if a booking already exists for the user and event
         existing_booking = Booking.query.filter_by(user_id=user_id, event_id=event_id).first()
@@ -141,11 +145,16 @@ def update_booking(booking_id):
         # Extract the new event_id from the request
         new_event_id = request.json.get('event_id')
         if not new_event_id:
-            raise ValidationError("Event ID is required") 
+            raise ValidationError("Event ID is required")
+         
+        #TODO: Check if the user_id matches the user who created the booking
+        # using an authentication and authorization logic here
+        # user_id = request.json.get('user_id')
         
-        # Validate the new_event_id
+        # Validate the new_event_id, and the user_id
         new_event_id = validate_uuid(new_event_id)
-
+        #user_id = validate_uuid(user_id)
+        
         # Update the event_id attribute of the booking
         booking.event_id = new_event_id
         db.session.commit()
