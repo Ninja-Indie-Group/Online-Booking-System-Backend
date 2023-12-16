@@ -1,4 +1,5 @@
 ## Endpoint Routes for Booking Blueprint
+from flask import g  # Import Flask's `g` object for storing user information
 from flask import Blueprint, request, jsonify
 from bookingapp.models.booking import Booking
 from bookingapp import db
@@ -87,6 +88,13 @@ def create_booking(event_id):
 
         # Extract user_id and other necessary data from the request
         user_id = request.json.get('user_id')
+        
+        # Validate user_id
+        if not user_id:
+            raise ValidationError("User ID is required")
+        
+        # Validate the user_id format ensuring it's a valid UUID
+        user_id = validate_uuid(user_id)
 
         # Check if a booking already exists for the user and event
         existing_booking = Booking.query.filter_by(user_id=user_id, event_id=event_id).first()
@@ -94,14 +102,14 @@ def create_booking(event_id):
             return jsonify({'message': 'User already has a booking for this event'}), 400
 
         # Create a new booking instance and add it to the database
-        booking = Booking(user_id=str(user_id), event_id=str(event_id))
+        booking = Booking(user_id=user_id, event_id=event_id)
         booking.insert()
 
         # Return the created booking
         formatted_booking = booking.format()
         return jsonify({'message': 'Booking has been successful', 'data': formatted_booking}), 201
     except ValidationError as ve:
-        return jsonify({'message': 'Validation error', 'error': ve.errors()}), 400
+        return jsonify({'message': 'Validation error', 'error': ve.messages}), 400
     except Exception as e:
         return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
     
@@ -130,19 +138,26 @@ def update_booking(booking_id):
         if not booking:
             return jsonify({'message': 'Booking not found'}), 404
 
-        # Update the booking attributes based on the request data
-        # For example: booking.attribute = request.json.get('new_value')
-        # Then, commit the changes to the database
-        # booking.update()
+        # Extract the new event_id from the request
+        new_event_id = request.json.get('event_id')
+        if not new_event_id:
+            raise ValidationError("Event ID is required") 
+        
+        # Validate the new_event_id
+        new_event_id = validate_uuid(new_event_id)
+
+        # Update the event_id attribute of the booking
+        booking.event_id = new_event_id
+        db.session.commit()
 
         # Return the updated booking
-        # formatted_booking = booking.format()
-        # return jsonify({'message': 'Booking updated', 'data': formatted_booking}), 200
-
-        # For now, return a placeholder response
-        return jsonify({'message': 'Update booking route placeholder'}), 200
+        formatted_booking = booking.format()
+        return jsonify({'message': 'Booking updated', 'data': formatted_booking}), 200
+    except ValidationError as ve:
+        return jsonify({'message': 'Validation error', 'error': ve.messages}), 400
     except Exception as e:
         return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
+
 
 # Route to delete a an existed Booking
 @booking_bp.route('/<booking_id>', methods=['DELETE'])
@@ -168,7 +183,11 @@ def delete_booking(booking_id):
         # Check if the booking exists
         if not booking:
             return jsonify({'message': 'Booking not found'}), 404
-
+        
+        # Check if the user making the request has permission to delete the booking
+        #if not (g.user.is_admin or g.user.id == booking.user_id):
+        #    return jsonify({'message': 'Unauthorized. You do not have permission to delete this booking.'}), 403
+        
         # Delete the booking from the database
         booking.delete()
 
