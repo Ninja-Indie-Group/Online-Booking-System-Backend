@@ -52,7 +52,7 @@ def get_bookings_for_user(user_id):
         user_id = validate_uuid(user_id)
 
         # Query the bookings for the user
-        bookings = Booking.query.filter_by(user_id=str(user_id)).all()
+        bookings = Booking.query.filter_by(user_id=user_id).all()
 
         # Check if the bookings exist
         if not bookings:
@@ -89,7 +89,7 @@ def create_booking(event_id):
         user_id = request.json.get('user_id')
 
         # Check if a booking already exists for the user and event
-        existing_booking = Booking.query.filter_by(user_id=str(user_id), event_id=str(event_id)).first()
+        existing_booking = Booking.query.filter_by(user_id=user_id, event_id=event_id).first()
         if existing_booking:
             return jsonify({'message': 'User already has a booking for this event'}), 400
 
@@ -120,9 +120,8 @@ def update_booking(booking_id):
         code if an error occurs during the process.
     """
     try:
-        # Validate the booking_id commented out, pending completion
-        #schema = IdSchema()
-        #booking_id = schema.load({'id': booking_id})
+        # Validate the booking_id
+        booking_id = validate_uuid(booking_id)
 
         # Retrieve the booking from the database
         booking = Booking.query.get(booking_id)
@@ -161,8 +160,7 @@ def delete_booking(booking_id):
     """
     try:
         # Validate the booking_id
-        #schema = IdSchema()
-        #booking_id = schema.load({'id': booking_id})
+        booking_id = validate_uuid(booking_id)
 
         # Retrieve the booking from the database
         booking = Booking.query.get(booking_id)
@@ -175,9 +173,6 @@ def delete_booking(booking_id):
         booking.delete()
 
         # Return a response indicating successful deletion
-        # return jsonify({'message': 'Booking deleted'}), 200
-
-        # For now, return a placeholder response
-        return jsonify({'message': 'Delete booking route placeholder'}), 200
+        return jsonify({'message': 'Booking deleted'}), 200
     except Exception as e:
         return jsonify({'message': 'An error occurred', 'error': str(e)}), 500

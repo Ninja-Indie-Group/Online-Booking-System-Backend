@@ -3,8 +3,7 @@ from flask import Blueprint, request, jsonify
 from bookingapp.models.event import Event
 from bookingapp import db
 from datetime import datetime
-#from bookingapp.utils.uuid_validation import IdSchema
-from uuid import UUID
+from bookingapp.utils.uuid_validation import validate_uuid
 
 # Create the event blueprint
 event_bp = Blueprint('event', __name__, url_prefix='/api/v1/event')
@@ -24,11 +23,16 @@ def create_event():
         event_data = request.json
 
         # Commented out the admin_id check for testing purposes
-        # admin_id = event_data.get('admin_id')  # Adjust based on your data model
+        # admin_id = event_data.get('admin_id')  
         # Ensure that the admin with the given admin_id exists
         # admin = Admin.query.get(admin_id)
         # if not admin:
         #     return jsonify({'message': 'Admin not found'}), 404
+        # check fo an existing event
+        event_name = request.json.get('event_name')
+        existed_event = Event.query.filter_by(event_name=event_name).first()
+        if existed_event:
+            return jsonify({'message': 'The event has already existed'}), 400
 
         # Create a new event instance and add it to the database
         event = Event(
