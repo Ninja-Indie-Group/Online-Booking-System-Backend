@@ -15,10 +15,14 @@ class Event(BaseModel):
     date_time = db.Column(db.DateTime, nullable=False)
     description = db.Column(db.Text, nullable=True)
     price = db.Column(db.Float, nullable=True)
-    admin_id = db.Column(db.String(255), db.ForeignKey('admins.id'), nullable=True)
-    attendees = db.relationship(
-        'User', secondary='event_attendees', backref=db.backref(
-            'attended_events', lazy='dynamic'))
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+
+    creator = db.relationship('User', backref=db.backref('created_events', lazy=True))
+
+#     attendees = db.relationship(
+#         'User', secondary='event_attendees', backref=db.backref(
+#             'attended_events', lazy='dynamic'))
 
     def __init__(self, event_name, location, date_time, description, admin_id):
         """Initialize the Event object"""

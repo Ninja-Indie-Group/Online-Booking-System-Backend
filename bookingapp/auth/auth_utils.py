@@ -4,6 +4,7 @@ from functools import wraps
 from bookingapp.models.user import User
 from flask_mail import Message
 from bookingapp import mail
+import re
 
 
 
@@ -29,9 +30,9 @@ def login_required(f):
             current_user_id = get_jwt_identity()
             user = User.query.get(current_user_id)
             if not user or not user.is_active:
-                return jsonify({'message': 'Unauthorized access'}), 401
+                return jsonify({'Unauthorized access'}), 401
         except Exception as e:
-            return jsonify({'message': 'Invalid token'}), 401
+            return jsonify({'Invalid token'}), 401
 
         return f(user, *args, **kwargs)
 
@@ -59,9 +60,9 @@ def admin_required(f):
             current_user_id = get_jwt_identity()
             user = User.query.get(current_user_id)
             if not user or not user.is_active or not user.is_admin:
-                return jsonify({'message': 'Unauthorized access'}), 401
+                return jsonify({'Unauthorized access'}), 401
         except Exception as e:
-            return jsonify({'message': 'Invalid token'}), 401
+            return jsonify({'Invalid token'}), 401
 
         return f(user, *args, **kwargs)
 
@@ -93,3 +94,39 @@ def send_otp_email(name, email, otp):
 
     except Exception as e:
         return {'msg': 'Email not sent', 'error': str(e)}, 500
+
+
+
+
+def validate_email(email):
+    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    return re.match(pattern, email) is not None
+
+def validate_password(password):
+    if len(password) < 6:
+        return 'Password must be at least 6 characters'
+    if not re.search("[a-z]", password):
+        return 'Password must contain at least one lowercase letter'
+    if not re.search("[A-Z]", password):
+        return 'Password must contain at least one uppercase letter'
+    if not re.search("[0-9]", password):
+        return 'Password must contain at least one number'
+    if re.search("\s", password):
+        return 'Password cannot contain spaces'
+    if re.search("[\"\']", password):
+        return 'Password cannot contain quotes'
+    if password == "password":
+        return 'Password too common'
+    if password == "123456":
+        return 'Password too common'
+    if password == "123456789":
+        return 'Password too common'
+    if password == "qwerty":
+        return 'Password too common'
+    if password == "password123":
+        return 'Password too common'
+    if password == "abc123":
+        return 'Password too common'
+    if password == "abcedf":
+        return 'Password too common'
+    return None

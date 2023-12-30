@@ -10,13 +10,10 @@ class User(BaseModel):
     # Use the default behavior for the table name
     __tablename__ = "users"
 
-
-    # Adjust the length of string columns based on your requirements
-    username = db.Column(db.String(50), unique=True, nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password = db.Column(db.String(255), nullable=False)
     avatar = db.Column(db.String(255), nullable=False)
     otp = db.Column(db.String(6), nullable=True, default=None)
     otp_created_at = db.Column(db.DateTime, nullable=True, default=None)
@@ -25,19 +22,13 @@ class User(BaseModel):
     is_active = db.Column(db.Boolean, nullable=False, default=True)
 
 
-    attended_events = db.relationship(
-        'Event', secondary='event_attendees', backref=db.backref(
-            'attendees', lazy='dynamic')
-    )
-
-    def __init__(self, username, first_name, last_name, email, password_hash, avatar, is_verified=False, is_admin=False, is_active=True):
+    def __init__(self, first_name, last_name, email, password, avatar='deault.jpg', is_verified=False, is_admin=False, is_active=True):
         """Initialize the User object"""
         super().__init__()
-        self.username = username
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
-        self.password_hash = password_hash
+        self.password = password
         self.avatar = avatar
         self.is_verified = is_verified
         self.is_admin = is_admin
@@ -49,7 +40,6 @@ class User(BaseModel):
     def __repr__(self):
         """Return a string representation of the User object"""
         return (
-            f"Id: {self.id}, Username: {self.username}, "
             f"Name: {self.name}, Email: {self.email}"
             )
 
@@ -57,7 +47,6 @@ class User(BaseModel):
     def format(self):
         """Return a dictionary representation of the User object"""
         return {
-            "username": self.username,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.email,
