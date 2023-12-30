@@ -22,10 +22,10 @@ class Admin(BaseModel):
     user_id = db.Column(db.String(255), db.ForeignKey('users.id'), nullable=True)
 
 
-    # Relationship with Event model
-    event = db.relationship(
-        "Event", backref="admin", cascade="all, delete-orphan", lazy=True
-    )
+#     # Relationship with Event model
+#     event = db.relationship(
+#         "Event", backref="admin", cascade="all, delete-orphan", lazy=True
+#     )
 
     def __init__(self, username, email, password, company, position, first_name, last_name, user_id, is_superadmin=False):
         """Initialize the Admin object"""

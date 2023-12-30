@@ -14,8 +14,8 @@ class Booking(BaseModel):
     event_id = db.Column(db.String(255), db.ForeignKey('events.id'), nullable=False)
     booking_date = db.Column(db.DateTime, nullable=False, default=datetime.now)
 
-    user = db.relationship('User', backref='bookings')
-    event = db.relationship('Event', backref='bookings')
+    user = db.relationship('User', backref=db.backref('bookings', lazy=True))
+    event = db.relationship('Event', backref=db.backref('bookings', lazy=True))
 
     def __init__(self, user_id, event_id, booking_date):
         """Initialize the Booking object"""

@@ -5,8 +5,8 @@ from bookingapp.models.user import User
 from functools import wraps
 from datetime import datetime, timedelta
 from random import randint
-from bookingapp.auth.auth_utils import login_required, admin_required, send_otp_email
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, decode_token, get_jwt_identity, get_jwt
+from bookingapp.auth.auth_utils import login_required, admin_required, send_otp_email, validate_email, validate_password
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, decode_token, get_jwt_identity, get_jwt, unset_jwt_cookies
 
 # Create a Blueprint for authentication routes
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/v1/auth')
@@ -16,21 +16,19 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api/v1/auth')
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.json
-    # Check if required fields are present in the request data
-    if 'email' not in data or 'password' not in data or 'first_name' not in data or 'last_name' not in data:
-        return jsonify({'message': 'Incomplete registration data'}), 400
+
+    mandatory_fields = ['email', 'password', 'first_name', 'last_name']
+
+    missing_fields = [field for field in mandatory_fields if field not in data]
+
+    if missing_fields:
+        return jsonify({'message': f'{missing_fields} is required'}), 400
 
     # turn email to lowercase
     data['email'] = data['email'].lower()
 
     # Use Regex to Check if the email is valid
-    import re
-
-    def is_valid_email(email):
-        pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-        return re.match(pattern, email) is not None
-
-    if not is_valid_email(data['email']):
+    if not validate_email(data['email']):
         return jsonify({'message': 'Invalid email'}), 400
 
 
@@ -40,12 +38,17 @@ def register():
         if existing_user:
             return jsonify({'message': 'Email already exists'}), 400
 
+        validation_result = validate_password(data['password'])
+        if validation_result is not None:
+                return jsonify({'message': validation_result}), 400
+
+
         # Create a new user
         new_user = User(email=data['email'], first_name=data['first_name'], last_name=data['last_name'], password=generate_password_hash(data['password']))
         new_user.insert()
 
         # Generate and store the OTP with its expiry time
-        otp = str(randint(1000, 9999))  # Generate a 6-digit OTP
+        otp = str(randint(1000, 9999))  # Generate a 4-digit OTP
         otp_expiry = datetime.now() + timedelta(minutes=10)  # Set expiry time to 10 minutes from now
         new_user.otp = otp
         new_user.otp_expiry = otp_expiry
@@ -60,21 +63,13 @@ def register():
 
         # get user data
         userData = {
-            "id": new_user.id,
-            "email": new_user.email,
-            "first_name": new_user.first_name,
-            "last_name": new_user.last_name,
-            "email_confirmed": new_user.email_confirmed,
-            "profile_picture": new_user.profile_picture,
-            "is_active": new_user.is_active,
-            "is_admin": new_user.is_admin,
             "accessToken": access_token,
             "refreshToken": refresh_token,
             "createdAt": new_user.createdAt,
-            "updatedAt": new_user.updatedAt
         }
         return jsonify({'message': 'User registered. OTP sent to email for verification.', 'userData': userData}), 201
     except Exception as e:
+        db.session.rollback()
         current_app.log_exception(exc_info=e)
         return (
             jsonify(
@@ -198,8 +193,7 @@ def login():
         "email": user.email,
         "first_name": user.first_name,
         "last_name": user.last_name,
-        "email_confirmed": user.email_confirmed,
-        "profile_picture": user.profile_picture,
+        "profile_picture": user.avatar,
         "is_active": user.is_active,
         "is_admin": user.is_admin,
         "accessToken": access_token,
@@ -215,13 +209,15 @@ def login():
 def refresh():
     current_user_id = get_jwt_identity()
     new_access_token = create_access_token(identity=current_user_id, expires_delta=timedelta(hours=1))
-    return jsonify(access_token=new_access_token, message='Token refreshed successfully', user_data=User.query.get(current_user_id).format()), 200
+    return jsonify(access_token=new_access_token, message='Token refreshed successfully'), 200
 
 
 # Endpoint for user logout
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
-    return jsonify({'message': 'Logged out successfully'}), 200
+    response = jsonify({"msg": "logout successful"})
+    unset_jwt_cookies(response)
+    return response
 
 
 # Endpoint for user profile
